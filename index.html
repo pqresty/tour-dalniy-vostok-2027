@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Дальний Восток — тур 11–22 мая 2027</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F6F4; --ink:#1B2530; --muted:#5B6672; --line:#DDE2E0;
+  --signal:#B3261E; --rest:#2E6B4F; --faint:#8A949D;
+  --rest-tint:rgba(46,107,79,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#131A21; --ink:#E7EBEE; --muted:#97A2AC; --line:#26313B;
+    --signal:#FF8A80; --rest:#86CBA9; --faint:#5F6B76;
+    --rest-tint:rgba(134,203,169,.10);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Golos Text","Helvetica Neue",Arial,sans-serif;
+  font-size:15px; line-height:1.45;
+}
+.mono{font-family:"IBM Plex Mono","SF Mono",Menlo,monospace}
+.wrap{max-width:72rem; margin:0 auto; padding:1.7rem 1.1rem 2.4rem}
+
+/* ---- шапка ---- */
+header h1{font-size:1.7rem; font-weight:600; letter-spacing:-.01em; margin:0 0 .3rem; line-height:1.15}
+.dates{font-size:.98rem; color:var(--muted); margin:0 0 .55rem}
+.dates b{color:var(--ink); font-weight:500}
+.summary{font-size:.92rem; color:var(--muted); margin:0; max-width:34rem}
+.summary b{color:var(--ink); font-weight:500}
+
+/* полоса месяца */
+.strip{display:flex; justify-content:space-between; max-width:22.5rem; margin:1rem 0 .25rem}
+.cell{text-align:center; min-width:1.55rem}
+.cell .n{font-family:"IBM Plex Mono",Menlo,monospace; font-size:.68rem; color:var(--muted); line-height:1}
+.cell .p{width:8px; height:8px; border:1.5px solid var(--ink); border-radius:50%; margin:4px auto 0; background:transparent}
+.cell.is-live .p{background:var(--ink)}
+.cell.is-rest .n{color:var(--rest); font-weight:500}
+.cell.is-rest .p{background:var(--rest); border-color:var(--rest)}
+.strip-legend{font-size:.72rem; color:var(--faint); margin:.35rem 0 0}
+.local{font-size:.8rem; color:var(--faint); margin:.7rem 0 0}
+
+/* ---- две колонки на десктопе ---- */
+.cols{display:grid; grid-template-columns:minmax(0,1fr); gap:2.2rem; margin-top:1.7rem}
+@media (min-width:1100px){
+  .cols{grid-template-columns:minmax(0,40rem) minmax(16rem,19rem); gap:3.5rem}
+  .side-inner{position:sticky; top:1.2rem}
+}
+
+/* ---- маршрутный лист ---- */
+.day{
+  display:grid;
+  grid-template-columns:3rem 1.4rem minmax(0,1fr);
+  column-gap:.55rem;
+  padding:.95rem 0 1rem;
+  border-top:1px solid var(--line);
+}
+.route .day:first-child{border-top:none; padding-top:.15rem}
+.day:last-child{padding-bottom:.2rem}
+
+.d-when{padding-top:.15rem}
+.d-dow{font-size:.72rem; color:var(--muted)}
+.d-num{font-family:"IBM Plex Mono",Menlo,monospace; font-size:1.12rem; font-weight:500; line-height:1.25}
+
+.d-rail{position:relative}
+.d-rail::before{
+  content:""; position:absolute; left:50%; top:-.95rem; bottom:-1rem;
+  width:1px; background:var(--line); transform:translateX(-.5px);
+}
+.route .day:first-child .d-rail::before{top:.5rem}
+.day:last-child .d-rail::before{bottom:auto; top:.5rem; height:.5rem}
+.d-dot{
+  position:absolute; left:50%; top:.38rem; transform:translateX(-50%);
+  width:9px; height:9px; border-radius:50%;
+  background:var(--paper); border:2px solid var(--muted);
+}
+.day.is-live .d-dot{border-color:var(--ink); background:var(--ink)}
+.day.is-rest .d-dot{border-color:var(--rest); background:var(--rest)}
+
+.d-city{font-size:1rem; font-weight:600; margin:0 0 .3rem; letter-spacing:-.005em}
+.d-city small{font-weight:400; color:var(--muted); font-size:.8rem}
+
+/* хронология дня: одна строка = один момент */
+.leg{display:flex; gap:.55rem; align-items:baseline; padding:.13rem 0; font-size:.86rem}
+.leg .t{
+  font-family:"IBM Plex Mono",Menlo,monospace; font-size:.78rem; color:var(--muted);
+  flex:0 0 auto; min-width:9.5ch;
+}
+.leg .x{color:var(--muted)}
+.leg.is-live .t{color:var(--ink); font-weight:500}
+.leg.is-live .x{color:var(--ink); font-weight:500}
+.leg.is-warn .t{color:var(--signal)}
+.leg.is-warn .x{color:var(--signal)}
+
+.branch{
+  font-size:.78rem; color:var(--faint); margin:.55rem 0 0;
+  padding-top:.5rem; border-top:1px dashed var(--line); max-width:30rem;
+}
+
+/* ночь между днями — на самой линии */
+.night{
+  display:grid; grid-template-columns:3rem 1.4rem minmax(0,1fr); column-gap:.55rem;
+}
+.night .nc{padding:.12rem 0 .5rem}
+.nc-chip{
+  font-family:"IBM Plex Mono",Menlo,monospace; font-size:.72rem; color:var(--faint);
+}
+.nc-chip b{color:var(--muted); font-weight:500}
+
+/* выходной — вся строка */
+.day.is-rest{
+  background:var(--rest-tint);
+  margin-inline:-.7rem; padding-inline:.7rem;
+  border-radius:10px;
+  border-top-color:transparent;
+}
+.day.is-rest + .night{margin-top:-.1rem}
+.rest-tag{
+  display:inline-block; font-family:"IBM Plex Mono",Menlo,monospace; font-size:.72rem;
+  color:var(--rest); border:1px solid var(--rest); border-radius:999px;
+  padding:.3em .75em .35em; margin-top:.2rem;
+}
+
+/* ---- сводка и проверки ---- */
+.side h2{font-size:.9rem; font-weight:600; margin:1.4rem 0 .55rem}
+.side h2:first-child{margin-top:0}
+.side ul{margin:0; padding-left:1.1rem; color:var(--muted); font-size:.84rem}
+.side li{margin:.32rem 0}
+.side .fl{font-family:"IBM Plex Mono",Menlo,monospace; font-size:.8rem; color:var(--ink)}
+.risk{font-size:.84rem; color:var(--muted); margin:.6rem 0 0; max-width:30rem}
+.risk b{color:var(--signal); font-weight:500}
+.verified{font-size:.72rem; color:var(--faint); margin:.7rem 0 0}
+.stats{display:flex; flex-wrap:wrap; gap:.4rem 1.4rem; margin:.2rem 0 0; font-size:.84rem; color:var(--muted)}
+.stats b{color:var(--ink); font-weight:500}
+
+@media (max-width:400px){
+  .wrap{padding:1.3rem .85rem 2rem}
+  header h1{font-size:1.5rem}
+  .day{grid-template-columns:2.7rem 1.25rem minmax(0,1fr); column-gap:.45rem}
+  .night{grid-template-columns:2.7rem 1.25rem minmax(0,1fr); column-gap:.45rem}
+  .d-num{font-size:1rem}
+  .d-city{font-size:.95rem}
+  .leg{font-size:.84rem}
+  .leg .t{min-width:9ch; font-size:.75rem}
+}
+@media print{
+  body{background:#fff; color:#000}
+  :root{--paper:#fff; --ink:#000; --muted:#444; --line:#ccc; --faint:#777}
+  .side-inner{position:static}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Дальний Восток</h1>
+  <p class="dates">Гастрольный тур, <b class="mono">11–22 мая 2027</b></p>
+  <p class="summary"><b>9 концертов</b>, один выходной. Ночёвки: <b>8</b> в отелях, <b>2</b> в самолётах, <b>1</b> в поезде. Все времена местные; стандарт дня — саундчек <b>16–18</b> и концерт <b>19–21</b>, отличия красным.</p>
+  <div class="strip" aria-hidden="true">
+    <div class="cell"><div class="n">11</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">12</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">13</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">14</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">15</div><div class="p"></div></div>
+    <div class="cell is-rest"><div class="n">16</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">17</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">18</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">19</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">20</div><div class="p"></div></div>
+    <div class="cell is-live"><div class="n">21</div><div class="p"></div></div>
+    <div class="cell"><div class="n">22</div><div class="p"></div></div>
+  </div>
+  <p class="strip-legend">май · точка под числом: закрашенная — концерт, зелёная — выходной, контурная — только переезды</p>
+</header>
+
+<div class="cols">
+<main class="route">
+
+  <div class="day">
+    <div class="d-when"><div class="d-dow">вт</div><div class="d-num">11.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Москва → Якутск</p>
+      <div class="leg"><span class="t">18:50 → 07:40¹</span><span class="x"><span class="fl mono">SU1750</span> Шереметьево → Якутск</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>самолёт</b></span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">ср</div><div class="d-num">12.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Якутск</p>
+      <div class="leg"><span class="t">07:40</span><span class="x">прилёт · заселение в отель, завтрак</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Якутск</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">чт</div><div class="d-num">13.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Иркутск</p>
+      <div class="leg"><span class="t">06:25 → 08:30</span><span class="x"><span class="fl mono">S7 6402</span> Якутск → Иркутск · заселение, завтрак</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+      <div class="leg"><span class="t">до 21:30</span><span class="x">сборы и дорога в аэропорт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>самолёт</b></span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">пт</div><div class="d-num">14.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Комсомольск-на-Амуре</p>
+      <div class="leg"><span class="t">00:50 → 06:05</span><span class="x"><span class="fl mono">HZ5653</span> Иркутск → Хабаровск</span></div>
+      <div class="leg"><span class="t">07:30–13:30</span><span class="x">машина в Комсомольск · по прибытии заселение</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-warn"><span class="t">18:30–20:30</span><span class="x">концерт — раньше стандарта, под поезд</span></div>
+      <div class="leg"><span class="t">21:00–22:15</span><span class="x">сборы и машина в Эльбан</span></div>
+      <p class="branch">Ветка Б: ночёвка в Комсомольске, утром машина 07:30–14:00 в Хабаровск, концерт там по стандарту.</p>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>поезд</b> · 367Ж Эльбан 22:42 → Хабаровск 05:46</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">сб</div><div class="d-num">15.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Хабаровск</p>
+      <div class="leg"><span class="t">05:46</span><span class="x">прибытие поезда · утром заселение и отдых</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Хабаровск</span></div></div>
+
+  <div class="day is-rest">
+    <div class="d-when"><div class="d-dow">вс</div><div class="d-num">16.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Петропавловск-Камчатский</p>
+      <div class="leg"><span class="t">10:30 → 15:15</span><span class="x"><span class="fl mono">HZ5684</span> Хабаровск → Елизово</span></div>
+      <div class="leg"><span class="t">после 15:15</span><span class="x">отель, отдых после перелёта</span></div>
+      <span class="rest-tag">выходной</span>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Камчатка</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">пн</div><div class="d-num">17.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Петропавловск-Камчатский</p>
+      <div class="leg"><span class="t">утро</span><span class="x">досуг — прилёт был накануне, переездов нет</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Камчатка</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">вт</div><div class="d-num">18.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Владивосток</p>
+      <div class="leg"><span class="t">14:00 → 15:25</span><span class="x"><span class="fl mono">Аврора</span> Елизово → Владивосток · летний вторник (у S7 вторника нет), с багажом сразу на площадку</span></div>
+      <div class="leg is-warn"><span class="t">≈17:00–18:30</span><span class="x">саундчек по прибытии</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Владивосток</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">ср</div><div class="d-num">19.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Арсеньев <small>· база во Владивостоке</small></p>
+      <div class="leg"><span class="t">10:00–14:00</span><span class="x">машина из отеля Владивостока</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+      <div class="leg"><span class="t">21:30 → ≈01:30</span><span class="x">возврат в отель Владивостока</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Владивосток, заезд ≈ 01:30</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">чт</div><div class="d-num">20.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Южно-Сахалинск</p>
+      <div class="leg"><span class="t">10:40 → 13:20</span><span class="x"><span class="fl mono">HZ5680 / SU5680</span> Владивосток → Южно-Сахалинск · завтрак до выезда</span></div>
+      <div class="leg"><span class="t">по прибытии</span><span class="x">заселение в отель</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Южно-Сахалинск</span></div></div>
+
+  <div class="day is-live">
+    <div class="d-when"><div class="d-dow">пт</div><div class="d-num">21.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Благовещенск</p>
+      <div class="leg"><span class="t">14:15 → 14:30</span><span class="x"><span class="fl mono">SU5317 / FV2476</span> Южно-Сахалинск → Благовещенск</span></div>
+      <div class="leg is-warn"><span class="t">сразу</span><span class="x">на площадку — окно до чека всего 1 ч 30 м</span></div>
+      <div class="leg"><span class="t">16–18</span><span class="x">саундчек</span></div>
+      <div class="leg is-live"><span class="t">19–21</span><span class="x">концерт · заселение после</span></div>
+    </div>
+  </div>
+  <div class="night"><div></div><div></div><div class="nc"><span class="nc-chip">ночь: <b>отель</b> · Благовещенск</span></div></div>
+
+  <div class="day">
+    <div class="d-when"><div class="d-dow">сб</div><div class="d-num">22.05</div></div>
+    <div class="d-rail"><div class="d-dot"></div></div>
+    <div>
+      <p class="d-city">Благовещенск → Москва</p>
+      <div class="leg"><span class="t">12:45 → 14:25</span><span class="x"><span class="fl mono">SU6264</span> Благовещенск → Шереметьево</span></div>
+    </div>
+  </div>
+
+</main>
+
+<aside class="side">
+  <div class="side-inner">
+    <h2>Итого</h2>
+    <div class="stats">
+      <span><b>9</b> концертов</span>
+      <span><b>1</b> выходной — вс 16.05</span>
+      <span><b>8 / 2 / 1</b> ночей: отель / самолёт / поезд</span>
+    </div>
+    <h2>Проверить при открытии продаж на май 2027</h2>
+    <ul>
+      <li><span class="fl">HZ5684</span> 16.05 — летние часы Хабаровск → Камчатка;</li>
+      <li>Аврора <span class="fl">14:00</span> 18.05 Камчатка → Владивосток — места и код SU для бизнес-зала;</li>
+      <li><span class="fl">HZ5680</span> 20.05 Владивосток → Южно-Сахалинск — летняя сетка;</li>
+      <li>Южно-Сахалинск → Благовещенск <span class="fl">21.05</span> — есть ли пятница летом.</li>
+    </ul>
+    <h2>Погода</h2>
+    <p class="risk"><b>Туманы Сахалина и Камчатки в мае</b> — обычное дело. У камчатского концерта теперь день запаса: прилёт накануне. У плеча Южно-Сахалинск → Благовещенск запаса нет — при отмене субботнего вылета домой оно становится узким местом.</p>
+    <p class="verified">Часы — ориентиры опубликованных расписаний, проверены 9–10 ноября 2026. Билеты на май 2027 в продаже не видны.</p>
+  </div>
+</aside>
+</div>
+
+</div>
+</body>
+</html>
